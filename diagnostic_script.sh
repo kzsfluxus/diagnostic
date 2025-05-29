@@ -299,7 +299,8 @@ NR==1 {print; next}  # Header sor megtartása
 
 # Futó processzek (top 10 CPU használat szerint)
 printf "\n%sTop 10 CPU-igényes folyamat:%s\n" "$CYAN" "$NC"
-ps auxf --sort=-%cpu | head -11
+SCRIPT_NAME=$(basename "$0")
+ps auxf --sort=-%cpu | grep -v -E "($SCRIPT_NAME|grep|ps aux)" | head -11
 
 print_section "ÖSSZEFOGLALÓ"
 
