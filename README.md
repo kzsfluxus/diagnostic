@@ -1,4 +1,4 @@
-# Linux Rendszer Diagnosztikai Script
+# Linux rendszer-diagnosztikai szkript
 
 ## 📋 Áttekintés
 
