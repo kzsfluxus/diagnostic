@@ -192,26 +192,6 @@ chmod +x diagnostic_script.sh
 ./diagnostic_script.sh | sed 's/\x1b\[[0-9;]*m//g' > diagnostic_clean.log
 ```
 
-## 🤝 Hozzájárulás
-
-1. Fork-old a repository-t
-2. Hozz létre egy feature branch-et (`git checkout -b feature/uj-funkcio`)
-3. Commitold a változásokat (`git commit -am 'Új funkció hozzáadása'`)
-4. Push-old a branch-et (`git push origin feature/uj-funkcio`)
-5. Nyiss egy Pull Request-et
-
-## 📄 Licenc
-
-Ez a projekt MIT licenc alatt áll. További részletekért lásd a `LICENSE` fájlt.
-
-## 🆘 Támogatás
-
-Ha problémád van a script-tel:
-
-1. Ellenőrizd a [hibaelhárítás](#-hibaelhárítás) szekciót
-2. Nyiss egy issue-t részletes leírással
-3. Csatold a script kimenetét és a rendszer információkat
-
 ## 📋 Changelog
 
 ### v1.0.0
@@ -223,5 +203,5 @@ Ha problémád van a script-tel:
 
 ---
 
-**Készítette:** [Your Name]  
+**Készítette:** [kzsfluxus]  
 **Utolsó frissítés:** 2025-05-29
