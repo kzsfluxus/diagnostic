@@ -1,21 +1,10 @@
 #!/bin/bash
 
-# Ellenőrizzük, hogy root jogokkal futunk-e
-if [ "$EUID" -eq 0 ]; then
-    SUDO_MODE=true
-    printf "Futás: %sroot jogokkal%s (teljes diagnosztika)\n" "$GREEN" "$NC"
-else
-    SUDO_MODE=false
-    printf "Futás: %sfelhasználói jogokkal%s (korlátozott diagnosztika)\n" "$YELLOW" "$NC"
-    printf "%sTipp:%s Futtasd 'sudo %s'-vel a teljes diagnosztikához\n\n" "$CYAN" "$NC" "$0"
-fi
-
 # Színek definiálása - printf használatával a kompatibilitás érdekében
 RED=$(printf '\033[0;31m')
 GREEN=$(printf '\033[0;32m')
 YELLOW=$(printf '\033[1;33m')
 BLUE=$(printf '\033[0;34m')
-PURPLE=$(printf '\033[0;35m')
 CYAN=$(printf '\033[0;36m')
 NC=$(printf '\033[0m') # No Color
 
@@ -25,9 +14,18 @@ if [ ! -t 1 ] || [ "$TERM" = "dumb" ]; then
     GREEN=""
     YELLOW=""
     BLUE=""
-    PURPLE=""
     CYAN=""
     NC=""
+fi
+
+# Ellenőrizzük, hogy root jogokkal futunk-e
+if [ "$EUID" -eq 0 ]; then
+    SUDO_MODE=true
+    printf "Futás: %sroot jogokkal%s (teljes diagnosztika)\n" "$GREEN" "$NC"
+else
+    SUDO_MODE=false
+    printf "Futás: %sfelhasználói jogokkal%s (korlátozott diagnosztika)\n" "$YELLOW" "$NC"
+    printf "%sTipp:%s Futtasd 'sudo %s'-vel a teljes diagnosztikához\n\n" "$CYAN" "$NC" "$0"
 fi
 
 # Funkció a szekciók elválasztásához
@@ -94,7 +92,7 @@ printf "   DESKTOP_SESSION: %s\n" "${DESKTOP_SESSION:-nincs beállítva}"
 if [ "$DISPLAY_SERVER" = "wayland" ]; then
     printf "\n%sWayland compositor:%s\n" "$CYAN" "$NC"
     if command -v loginctl &> /dev/null; then
-        SESSION_ID=$(loginctl show-user $USER -p Display --value 2>/dev/null)
+        SESSION_ID=$(loginctl show-user "$USER" -p Display --value 2>/dev/null)
         if [ -n "$SESSION_ID" ]; then
             printf "   Session ID: %s\n" "$SESSION_ID"
         fi
@@ -111,7 +109,7 @@ fi
 # GPU információk
 printf "\n%sGPU információk:%s\n" "$CYAN" "$NC"
 if command -v lspci &> /dev/null; then
-    lspci | grep -i vga | while read line; do
+    lspci | grep -i vga | while read -r line; do
         printf "   %s\n" "$line"
     done
     # 3D gyorsítás ellenőrzése
@@ -130,9 +128,9 @@ if command -v journalctl &> /dev/null; then
     printf "\n%sGrafikus szolgáltatások hibái:%s\n" "$CYAN" "$NC"
     # Display manager hibák
     for dm in gdm gdm3 sddm lightdm xdm; do
-        if systemctl is-active --quiet $dm 2>/dev/null; then
+        if systemctl is-active --quiet "$dm" 2>/dev/null; then
             printf "\n   %s%s hibák:%s\n" "$YELLOW" "$dm" "$NC"
-            journalctl -u $dm -p warning -n 10 --no-pager 2>/dev/null | highlight_errors
+            journalctl -u "$dm" -p warning -n 10 --no-pager 2>/dev/null | highlight_errors
         fi
     done
     
@@ -285,7 +283,7 @@ services=("NetworkManager" "systemd-resolved" "bluetooth" "cups")
 
 for service in "${services[@]}"; do
     if systemctl list-unit-files | grep -q "^$service"; then
-        status=$(systemctl is-active $service 2>/dev/null)
+        status=$(systemctl is-active "$service" 2>/dev/null)
         if [ "$status" = "active" ]; then
             printf "   %s%s: aktív%s\n" "$GREEN" "$service" "$NC"
         else
@@ -311,7 +309,10 @@ NR==1 {print; next}  # Header sor megtartása
 # Futó processzek (top 10 CPU használat szerint)
 printf "\n%sTop 10 CPU-igényes folyamat:%s\n" "$CYAN" "$NC"
 SCRIPT_NAME=$(basename "$0")
-ps auxf --sort=-%cpu | grep -v -E "($SCRIPT_NAME|grep|ps aux)" | head -11
+# A ps aux helyett használjunk egy biztonságosabb megközelítést
+ps -eo pid,pcpu,pmem,comm --sort=-%cpu --no-headers | grep -v -E "($SCRIPT_NAME|grep)" | head -10 | while read -r pid pcpu pmem comm; do
+    printf "%5s %6s%% %6s%% %s\n" "$pid" "$pcpu" "$pmem" "$comm"
+done
 
 print_section "ÖSSZEFOGLALÓ"
 
