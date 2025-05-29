@@ -215,13 +215,24 @@ fi
 # dmesg hibák
 printf "\n%sKernel hibák (dmesg):%s\n" "$CYAN" "$NC"
 if [ "$SUDO_MODE" = true ]; then
-    dmesg --level=err,warn 2>/dev/null | tail -15 | highlight_errors
-else
-    # Felhasználói módban próbáljuk meg, de lehet korlátozva lesz
-    if dmesg --level=err,warn 2>/dev/null | head -1 >/dev/null 2>&1; then
-        dmesg --level=err,warn 2>/dev/null | tail -15 | highlight_errors
+    DMESG_ERRORS=$(dmesg --level=err,warn 2>/dev/null | tail -15)
+    if [ -n "$DMESG_ERRORS" ]; then
+        echo "$DMESG_ERRORS" | highlight_errors
     else
-        printf "   %sdmesg olvasásához sudo jogok szükségesek%s\n" "$YELLOW" "$NC"
+        printf "   %sNincsenek kernel hibák%s\n" "$GREEN" "$NC"
+    fi
+else
+    # Ellenőrizzük, hogy van-e érdemi kimenet
+    dmesg_output=$(dmesg --level=err,warn 2>/dev/null | head -5)
+    if [ -n "$dmesg_output" ] && [ "$(echo "$dmesg_output" | wc -l)" -gt 0 ]; then
+        DMESG_ERRORS=$(dmesg --level=err,warn 2>/dev/null | tail -15)
+        if [ -n "$DMESG_ERRORS" ]; then
+            echo "$DMESG_ERRORS" | highlight_errors
+        else
+            printf "   %sNincsenek kernel hibák%s\n" "$GREEN" "$NC"
+        fi
+    else
+        printf "   %sA dmesg olvasásához sudo jogok szükségesek%s\n" "$YELLOW" "$NC"
     fi
 fi
 
