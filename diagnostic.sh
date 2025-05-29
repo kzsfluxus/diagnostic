@@ -190,14 +190,26 @@ fi
 
 # Syslog (ha létezik és olvasható)
 printf "\n%sSyslog hibák:%s\n" "$CYAN" "$NC"
-if [ -f /var/log/syslog ]; then
-    if [ "$SUDO_MODE" = true ] || [ -r /var/log/syslog ]; then
-        grep -i -E "(error|failed|critical)" /var/log/syslog 2>/dev/null | tail -10 | highlight_errors
+SYSLOG_FILE=""
+
+# Keressük meg a syslog fájlt különböző helyeken
+for syslog_path in "/var/log/syslog" "/var/log/messages"; do
+    if [ -f "$syslog_path" ]; then
+        SYSLOG_FILE="$syslog_path"
+        break
+    fi
+done
+
+if [ -n "$SYSLOG_FILE" ]; then
+    printf "   Syslog fájl: %s\n" "$SYSLOG_FILE"
+    if [ "$SUDO_MODE" = true ] || [ -r "$SYSLOG_FILE" ]; then
+        grep -i -E "(error|failed|critical)" "$SYSLOG_FILE" 2>/dev/null | tail -10 | highlight_errors
     else
         printf "   %sSyslog olvasásához sudo jogok szükségesek%s\n" "$YELLOW" "$NC"
     fi
 else
-    printf "   Syslog nem található\n"
+    printf "   %sSyslog nem található (modern rendszereken systemd journal használatos)%s\n" "$YELLOW" "$NC"
+    printf "   %sTipp: használd a 'journalctl' parancsot részletes logokért%s\n" "$CYAN" "$NC"
 fi
 
 # dmesg hibák
