@@ -225,6 +225,29 @@ else
     fi
 fi
 
+# ACPI hibák 
+printf "\n%sACPI hibák:%s\n" "$CYAN" "$NC"
+if [ "$SUDO_MODE" = true ]; then
+    ACPI_ERRORS=$(dmesg 2>/dev/null | grep -i "acpi" | grep -E "(error|failed|warning|critical)" | tail -10)
+    if [ -n "$ACPI_ERRORS" ]; then
+        echo "$ACPI_ERRORS" | highlight_errors
+    else
+        printf "   %sNincsenek ACPI hibák%s\n" "$GREEN" "$NC"
+    fi
+else
+    # Felhasználói módban próbáljuk meg
+    if dmesg 2>/dev/null | head -1 >/dev/null 2>&1; then
+        ACPI_ERRORS=$(dmesg 2>/dev/null | grep -i "acpi" | grep -E "(error|failed|warning|critical)" | tail -10)
+        if [ -n "$ACPI_ERRORS" ]; then
+            echo "$ACPI_ERRORS" | highlight_errors
+        else
+            printf "   %sNincsenek ACPI hibák%s\n" "$GREEN" "$NC"
+        fi
+    else
+        printf "   %sACPI hibák ellenőrzéséhez sudo jogok szükségesek%s\n" "$YELLOW" "$NC"
+    fi
+fi
+
 print_section "HÁLÓZAT"
 
 # Hálózati interfészek
