@@ -2,7 +2,7 @@
 
 ## 📋 Áttekintés
 
-Ez egy átfogó Linux rendszer diagnosztikai script, amely részletes információkat gyűjt a rendszer állapotáról, teljesítményéről és potenciális problémáiról. A script magyar nyelven íródott és színes, könnyen olvasható kimenetet biztosít.
+Ez egy átfogó Linux rendszer-diagnosztikai szkript, amely részletes információkat gyűjt a rendszer állapotáról, teljesítményéről és potenciális problémáiról. A szkript magyar nyelven íródott és színes, könnyen olvasható kimenetet biztosít.
 
 ## ✨ Funkciók
 
